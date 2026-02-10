@@ -13,6 +13,16 @@
       <h1>Stonk App</h1>
       <p class="subtitle">Unified investment tracker with Plaid sync + manual holdings + Google Sheets export.</p>
 
+      <section class="quick-start card">
+        <h2>No-coding workflow</h2>
+        <ol>
+          <li>Click <strong>Connect Plaid</strong> to link your brokerage account.</li>
+          <li>Click <strong>Sync Plaid Holdings</strong> whenever you want fresh balances.</li>
+          <li>Add non-broker investments with the manual form or bulk import CSV.</li>
+          <li>Click <strong>Sync to Google Sheets</strong> to push everything back to your sheet.</li>
+        </ol>
+      </section>
+
       <section class="controls">
         <button id="connectPlaidBtn">Connect Plaid</button>
         <button id="syncPlaidBtn">Sync Plaid Holdings</button>
@@ -43,6 +53,13 @@
             <input name="costBasis" type="number" step="0.01" min="0" placeholder="Cost Basis" />
             <button type="submit">Add</button>
           </form>
+
+          <h3>Bulk import manual investments</h3>
+          <p class="help-text">Upload a CSV with columns: <code>account,symbol,name,quantity,price,costBasis</code>.</p>
+          <div class="import-row">
+            <input id="manualCsvFile" type="file" accept=".csv,text/csv" />
+            <button id="importCsvBtn" type="button">Import CSV</button>
+          </div>
         </article>
 
         <article>

@@ -12,6 +12,14 @@ main {
   padding: 24px;
 }
 .subtitle { color: #475467; }
+.quick-start {
+  margin-bottom: 16px;
+}
+.quick-start ol {
+  margin: 8px 0 0;
+  padding-left: 18px;
+  color: #475467;
+}
 .controls {
   display: flex;
   gap: 12px;
@@ -59,6 +67,18 @@ input {
   padding: 10px;
 }
 form button { grid-column: span 2; }
+.help-text {
+  color: #475467;
+  font-size: 14px;
+}
+.import-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.import-row input {
+  flex: 1;
+}
 section:last-child {
   margin-top: 18px;
   background: white;
@@ -81,4 +101,8 @@ th, td {
     grid-template-columns: 1fr;
   }
   form button { grid-column: span 1; }
+  .import-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
 }
