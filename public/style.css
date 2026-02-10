@@ -1,0 +1,84 @@
+:root {
+  font-family: Inter, system-ui, Arial, sans-serif;
+  color: #101828;
+  background: #f8fafc;
+}
+body {
+  margin: 0;
+}
+main {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 24px;
+}
+.subtitle { color: #475467; }
+.controls {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+button {
+  background: #0b57d0;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 14px;
+  cursor: pointer;
+}
+.cards {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+.card {
+  background: white;
+  border-radius: 12px;
+  padding: 16px;
+  border: 1px solid #e4e7ec;
+}
+.layout {
+  margin-top: 18px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+article {
+  background: white;
+  border-radius: 12px;
+  padding: 16px;
+  border: 1px solid #e4e7ec;
+}
+form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+input {
+  border-radius: 8px;
+  border: 1px solid #d0d5dd;
+  padding: 10px;
+}
+form button { grid-column: span 2; }
+section:last-child {
+  margin-top: 18px;
+  background: white;
+  border: 1px solid #e4e7ec;
+  border-radius: 12px;
+  padding: 16px;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+th, td {
+  border-bottom: 1px solid #eaecf0;
+  padding: 8px;
+  text-align: left;
+}
+@media (max-width: 900px) {
+  .cards, .layout, form {
+    grid-template-columns: 1fr;
+  }
+  form button { grid-column: span 1; }
+}
