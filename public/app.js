@@ -20,6 +20,28 @@ async function fetchJson(url, options = {}) {
   return payload;
 }
 
+function parseCsv(csvText) {
+  const lines = csvText
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean);
+
+  if (lines.length < 2) {
+    throw new Error('CSV must include a header row and at least one data row.');
+  }
+
+  const headers = lines[0].split(',').map((header) => header.trim());
+  const rows = lines.slice(1).map((line) => line.split(',').map((cell) => cell.trim()));
+
+  return rows.map((cells) => {
+    const row = {};
+    headers.forEach((header, index) => {
+      row[header] = cells[index] || '';
+    });
+    return row;
+  });
+}
+
 async function loadPortfolio() {
   const portfolio = await fetchJson('/api/portfolio');
   $('totalValue').textContent = money(portfolio.totalValue);
@@ -129,6 +151,34 @@ async function wireUp() {
       await loadPortfolio();
     } catch (error) {
       setStatus(`Could not add manual investment: ${error.message}`);
+    }
+  });
+
+  $('importCsvBtn').addEventListener('click', async () => {
+    const fileInput = $('manualCsvFile');
+    const file = fileInput.files?.[0];
+
+    if (!file) {
+      setStatus('Select a CSV file before importing.');
+      return;
+    }
+
+    try {
+      setStatus('Reading CSV file...');
+      const csvText = await file.text();
+      const rows = parseCsv(csvText);
+
+      setStatus('Importing manual investments...');
+      const result = await fetchJson('/api/manual-investments/import', {
+        method: 'POST',
+        body: JSON.stringify({ rows })
+      });
+
+      fileInput.value = '';
+      setStatus(`Imported ${result.imported} manual investments from CSV.`);
+      await loadPortfolio();
+    } catch (error) {
+      setStatus(`CSV import failed: ${error.message}`);
     }
   });
 

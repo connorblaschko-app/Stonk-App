@@ -3,7 +3,7 @@ const path = require('path');
 const express = require('express');
 const { Configuration, PlaidApi, PlaidEnvironments, Products, CountryCode } = require('plaid');
 const { v4: uuidv4 } = require('uuid');
-const { google } = require('googleapis');
+const { sheets, auth } = require('@googleapis/sheets');
 require('dotenv').config();
 
 const app = express();
@@ -52,6 +52,27 @@ async function writeDb(nextDb) {
 function toNumber(input) {
   const value = Number(input);
   return Number.isFinite(value) ? value : 0;
+}
+
+function normalizeManualEntry(raw = {}) {
+  const account = String(raw.account || '').trim();
+  const symbol = String(raw.symbol || '').trim().toUpperCase();
+  const name = String(raw.name || '').trim();
+
+  if (!account || !symbol || !name) {
+    return null;
+  }
+
+  return {
+    id: uuidv4(),
+    account,
+    symbol,
+    name,
+    quantity: toNumber(raw.quantity),
+    price: toNumber(raw.price),
+    costBasis: toNumber(raw.costBasis),
+    updatedAt: new Date().toISOString()
+  };
 }
 
 function mergedPositions(db) {
@@ -224,22 +245,37 @@ app.post('/api/manual-investments', async (req, res) => {
     return res.status(400).json({ error: 'account, symbol, and name are required.' });
   }
 
-  const entry = {
-    id: uuidv4(),
-    account,
-    symbol: symbol.toUpperCase(),
-    name,
-    quantity: toNumber(quantity),
-    price: toNumber(price),
-    costBasis: toNumber(costBasis),
-    updatedAt: new Date().toISOString()
-  };
+  const entry = normalizeManualEntry({ account, symbol, name, quantity, price, costBasis });
 
   const db = await readDb();
   db.manualInvestments.push(entry);
   await writeDb(db);
 
   return res.status(201).json(entry);
+});
+
+app.post('/api/manual-investments/import', async (req, res) => {
+  const { rows } = req.body;
+
+  if (!Array.isArray(rows) || rows.length === 0) {
+    return res.status(400).json({ error: 'rows array is required.' });
+  }
+
+  const entries = rows
+    .map((row) => normalizeManualEntry(row))
+    .filter(Boolean);
+
+  if (entries.length === 0) {
+    return res.status(400).json({
+      error: 'No valid rows found. Each row needs account, symbol, and name.'
+    });
+  }
+
+  const db = await readDb();
+  db.manualInvestments.push(...entries);
+  await writeDb(db);
+
+  return res.status(201).json({ imported: entries.length, entries });
 });
 
 app.delete('/api/manual-investments/:id', async (req, res) => {
@@ -276,11 +312,11 @@ app.post('/api/google-sheets/sync', async (_req, res) => {
     const positions = mergedPositions(db);
 
     const credentials = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_JSON);
-    const auth = new google.auth.GoogleAuth({
+    const googleAuth = new auth.GoogleAuth({
       credentials,
       scopes: ['https://www.googleapis.com/auth/spreadsheets']
     });
-    const sheets = google.sheets({ version: 'v4', auth });
+    const sheetsClient = sheets({ version: 'v4', auth: googleAuth });
 
     const rows = [
       ['Source', 'Account', 'Symbol', 'Name', 'Quantity', 'Price', 'Value', 'Cost Basis', 'Last Updated'],
@@ -297,7 +333,7 @@ app.post('/api/google-sheets/sync', async (_req, res) => {
       ])
     ];
 
-    await sheets.spreadsheets.values.update({
+    await sheetsClient.spreadsheets.values.update({
       spreadsheetId: process.env.GOOGLE_SHEET_ID,
       range: 'Portfolio!A1',
       valueInputOption: 'USER_ENTERED',

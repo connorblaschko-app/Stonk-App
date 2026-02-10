@@ -11,6 +11,7 @@ A lightweight investment tracker that combines:
 - Connect one or more brokerages via Plaid Link.
 - Pull holdings data from Plaid and normalize it in one dashboard.
 - Manually add/delete positions not available in Plaid.
+- Bulk import manual investments from CSV (great for pasting exports from your existing Google Sheet).
 - View total portfolio + source breakdown chart.
 - Push all merged positions into a Google Sheet tab (`Portfolio!A1`).
 
@@ -50,9 +51,21 @@ Open `http://localhost:3000`.
 - `POST /api/sync/plaid`
 - `GET /api/portfolio`
 - `POST /api/manual-investments`
+- `POST /api/manual-investments/import`
 - `DELETE /api/manual-investments/:id`
 - `POST /api/google-sheets/sync`
 
 ## Data storage
 
 The app stores data in `db.json` in project root. This is intentionally simple for local usage and easy backup.
+
+
+## No-code usage
+
+Once this app is running, you can do everything from the browser UI (no coding needed):
+
+1. Connect your brokerage with **Connect Plaid**.
+2. Click **Sync Plaid Holdings** to refresh balances.
+3. Add manual assets one-at-a-time with the form, or upload a CSV with columns:
+   `account,symbol,name,quantity,price,costBasis`.
+4. Click **Sync to Google Sheets** whenever you want your sheet updated.
